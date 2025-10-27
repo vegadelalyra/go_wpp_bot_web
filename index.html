@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin de Prompts</title>
+    <!-- 1. Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. FontAwesome Icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <style>
+        /* Custom styles for the app */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Dark mode background */
+            background-color: #111827; /* bg-gray-900 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        /* Custom scrollbar for sidebar */
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; } /* bg-gray-600 */
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+
+        /* Animación de flotar para el ícono */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Animation for the modal */
+        .modal {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .modal:not(.hidden) {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Estilo para el botón de login épico */
+        .epic-login-button {
+            background: linear-gradient(145deg, #4f46e5, #6366f1); /* Degradado púrpura-azul */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .epic-login-button:hover:not(:disabled) {
+            background: linear-gradient(145deg, #6366f1, #4f46e5); /* Invertir degradado */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px); /* Efecto de elevación */
+        }
+        .epic-login-button:disabled {
+            background: #4b5563; /* bg-gray-600 */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="text-gray-300">
+
+    <!-- ====================================================== --><!-- LOGIN SCREEN --><!-- ====================================================== --><div id="login-screen" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+        
+        <div class="w-full max-w-md text-center">
+            <!-- Icono Flotante de Emycommerce --><img src="Emy.png" alt="Emycommerce Logo" class="w-24 h-24 mx-auto mb-4 float-animation">
+
+            <!-- Tarjeta de Login con efecto Glassmorphism --><div class="p-8 space-y-6 bg-gray-800/50 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700">
+                <h2 class="text-3xl font-bold text-center text-white">Admin de Prompts</h2>
+                
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-300 sr-only">Contraseña</label>
+                        <input id="password" name="password" type="password" required class="w-full px-3 py-2 mt-1 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Contraseña">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white epic-login-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span id="login-btn-text">Ingresar</span>
+                            <i id="login-spinner" class="fas fa-spinner fa-spin hidden"></i>
+                        </button>
+                    </div>
+                    <p id="login-status" class="text-sm text-center text-red-400"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================== --><!-- DASHBOARD SCREEN --><!-- ====================================================== --><div id="dashboard-screen" class="hidden">
+        <div class="flex h-screen bg-gray-900">
+            <!-- Sidebar --><aside class="w-80 bg-gray-800 shadow-lg flex flex-col border-r border-gray-700">
+                <div class="p-6 border-b border-gray-700">
+                    <h2 class="text-2xl font-bold text-white">¡Hola, <span id="user-name"></span>!</h2>
+                </div>
+                <nav id="prompt-nav-list" class="flex-1 p-4 space-y-2 overflow-y-auto sidebar-nav">
+                    <!-- Nav items will be injected by JS --><!-- Example:
+                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-700 group" data-prompt-id="1">
+                        <div class="font-semibold text-gray-100 group-hover:text-blue-400">Prompt de Saludo</div>
+                        <div class="text-xs text-gray-400">Actualizado hace 5 min</div>
+                    </a>
+                    --></nav>
+                <div class="p-4 border-t border-gray-700">
+                    <button id="logout-btn" class="w-full py-2 px-4 rounded-md text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
+                    </button>
+                </div>
+                <!-- Branding Emycommerce --><div class="p-4 text-center text-xs text-gray-500 border-t border-gray-700">
+                    Emycommerce
+                </div>
+            </aside>
+
+            <!-- Main Content Area --><main id="prompt-content-area" class="flex-1 p-6 md:p-10 overflow-y-auto">
+                <!-- Prompt content will be injected by JS --><!-- Example:
+                <div class="max-w-4xl mx-auto">
+                    <h1 class="text-4xl font-bold text-white">Prompt de Saludo</h1>
+                    <p class="mt-2 text-lg text-gray-300">Esta es la lógica de negocio...</p>
+                    <div class="mt-8 p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                        <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+                            <div class="md:col-span-5">
+                                <label class="block text-sm font-medium text-gray-300">Prompt Original (Solo Lectura)</label>
+                                <textarea readonly class="w-full h-64 p-3 mt-1 bg-gray-900 border border-gray-700 rounded-md text-gray-300">Original text...</textarea>
+                            </div>
+                            <div class="text-center">
+                                <i class="fas fa-arrow-right text-3xl text-gray-500 hidden md:block"></i>
+                                <i class="fas fa-arrow-down text-3xl text-gray-500 block md:hidden"></i>
+                            </div>
+                            <div class="md:col-span-5">
+                                <label class="block text-sm font-medium text-gray-300">Nuevo Prompt (Editable)</label>
+                                <textarea id="editable-prompt-area" class="w-full h-64 p-3 mt-1 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">Editable text...</textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-6">
+                            <div class="text-sm text-gray-400">
+                                <strong>Último cambio:</strong> <span id="prompt-last-change-info">hace 10 min</span>
+                            </div>
+                            <button id="save-prompt-btn" class="py-2 px-5 font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400">
+                                <span id="save-btn-text">MODIFICAR PROMPT</span>
+                                <i id="save-spinner" class="fas fa-spinner fa-spin hidden"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                --></main>
+        </div>
+    </div>
+    
+    <!-- ====================================================== --><!-- CONFIRMATION MODAL ("Sweet Alert") --><!-- ====================================================== --><div id="confirmation-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div class="modal-content transform transition-all bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl border border-gray-700">
+            <div class="p-6">
+                <h3 class="text-2xl font-bold text-white">Confirmar Cambios</h3>
+                <p class="mt-2 text-gray-300">Estás a punto de modificar el prompt. Por favor, revisa los cambios y agrega una razón.</p>
+                
+                <!-- "Ver más" changes section --><div class="mt-4 max-h-60 overflow-y-auto p-4 bg-gray-900 rounded-lg border border-gray-700">
+                    <h4 class="font-semibold text-white">Cambios a realizar:</h4>
+                    <div class="mt-2">
+                        <label class="text-xs font-medium text-red-400">--- ANTERIOR ---</label>
+                        <pre id="modal-old-text" class="w-full p-2 text-sm bg-red-900/50 rounded text-red-300 whitespace-pre-wrap"></pre>
+                    </div>
+                    <div class="mt-2">
+                        <label class="text-xs font-medium text-green-400">--- NUEVO ---</label>
+                        <pre id="modal-new-text" class="w-full p-2 text-sm bg-green-900/50 rounded text-green-300 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Reason Textarea --><div class="mt-4">
+                    <label for="modal-reason" class="block text-sm font-medium text-gray-300">Razón del cambio (Opcional)</label>
+                    <textarea id="modal-reason" rows="3" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Ajuste de tono para ser más amigable..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Modal Footer --><div class="px-6 py-4 bg-gray-800/50 rounded-b-xl flex justify-end space-x-3 border-t border-gray-700">
+                <button id="modal-cancel-btn" class="py-2 px-4 text-sm font-medium text-gray-300 bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500">
+                    Cancelar
+                </button>
+                <button id="modal-confirm-btn" class="py-2 px-4 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                    Confirmar y Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ====================================================== --><!-- JAVASCRIPT APPLICATION --><!-- ====================================================== --><script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- CONFIGURACIÓN ---
+            // ¡PON TU URL PERMANENTE DE CLOUDFLARE TUNNEL AQUÍ!
+            // Esta es la única URL que la app usará.
+            const HARDCODED_SERVER_URL = "https://tu-url-permanente.trycloudflare.com";
+
+
+            // --- STATE ---
+            const state = {
+                // serverUrl: '', // Ya no se necesita, usamos la constante
+                token: null, // Will store User ID as token
+                userName: '',
+                prompts: [] // Will be an array of prompt objects
+            };
+
+            // --- DOM ELEMENTS ---
+            const loginScreen = document.getElementById('login-screen');
+            const dashboardScreen = document.getElementById('dashboard-screen');
+            const loginForm = document.getElementById('login-form');
+            const loginStatus = document.getElementById('login-status');
+            const loginBtnText = document.getElementById('login-btn-text');
+            const loginSpinner = document.getElementById('login-spinner');
+            
+            // const serverUrlInput = document.getElementById('server_url'); // Ya no se necesita
+            // const usernameInput = document.getElementById('username'); // Ya no se necesita
+            const passwordInput = document.getElementById('password');
+            
+            const userNameEl = document.getElementById('user-name');
+            const promptNavList = document.getElementById('prompt-nav-list');
+            const promptContentArea = document.getElementById('prompt-content-area');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            const modal = document.getElementById('confirmation-modal');
+            const modalOldText = document.getElementById('modal-old-text');
+            const modalNewText = document.getElementById('modal-new-text');
+            const modalReason = document.getElementById('modal-reason');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+            // --- API FETCHER ---
+            // A helper to make all API calls
+            async function apiFetch(endpoint, method, body) {
+                // Usa la URL hardcodeada en lugar de state.serverUrl
+                const url = HARDCODED_SERVER_URL + endpoint;
+                
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (state.token) {
+                    headers['Authorization'] = `Bearer ${state.token}`;
+                }
+
+                try {
+                    const options = { method, headers };
+                    if (body) {
+                        options.body = JSON.stringify(body);
+                    }
+                    
+                    const response = await fetch(url, options);
+                    
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Ocurrió un error en el servidor');
+                    }
+                    return data;
+
+                } catch (err) {
+                    console.error('API Fetch Error:', err);
+                    loginStatus.textContent = err.message; // Show general errors here
+                    return null;
+                }
+            }
+
+            // --- ON PAGE LOAD ---
+            function init() {
+                // Ya no necesitamos la URL del server desde localStorage
+                const savedToken = localStorage.getItem('token');
+                
+                // if (savedUrl) {  // --- ELIMINADO
+                //     serverUrlInput.value = savedUrl; // --- ELIMINADO
+                //     state.serverUrl = savedUrl; // --- ELIMINADO
+                // } // --- ELIMINADO
+
+                if (savedToken) {
+                    state.token = savedToken;
+                    // 2. Try to bootstrap dashboard if token exists
+                    bootstrapDashboard();
+                } else {
+                    // 3. Show login if no token
+                    showScreen('login');
+                }
+                
+                loginForm.addEventListener('submit', handleLogin);
+                logoutBtn.addEventListener('click', handleLogout);
+                modalCancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            }
+
+            // --- AUTHENTICATION ---
+            async function handleLogin(e) {
+                e.preventDefault();
+                setLoginLoading(true);
+                
+                const password = passwordInput.value;
+
+                if (!password) { 
+                    loginStatus.textContent = 'Por favor, completa la contraseña.';
+                    setLoginLoading(false);
+                    return;
+                }
+
+                const data = await apiFetch('/api/login', 'POST', { password });
+
+                if (data && data.token) {
+                    state.token = data.token;
+                    localStorage.setItem('token', state.token);
+                    
+                    await bootstrapDashboard();
+                } else {
+                    setLoginLoading(false);
+                }
+            }
+            
+            function handleLogout() {
+                state.token = null;
+                state.userName = '';
+                state.prompts = [];
+                localStorage.removeItem('token');
+                
+                promptNavList.innerHTML = '';
+                promptContentArea.innerHTML = '<p class="text-center text-gray-400">Selecciona un prompt para empezar.</p>';
+                passwordInput.value = ''; 
+                
+                showScreen('login');
+            }
+
+            // --- DASHBOARD ---
+            async function bootstrapDashboard() {
+                const data = await apiFetch('/api/dashboard', 'GET');
+                
+                if (data && data.user) {
+                    state.userName = data.user.username;
+                    state.prompts = data.prompts; 
+                    
+                    userNameEl.textContent = state.userName;
+                    renderSidebarNav(state.prompts);
+                    
+                    if (state.prompts.length > 0) {
+                        renderPromptContent(state.prompts[0].id); 
+                        document.querySelector('.nav-link[data-prompt-id="' + state.prompts[0].id + '"]').classList.add('bg-blue-900/50', 'text-blue-300');
+                    } else {
+                        promptContentArea.innerHTML = '<p class="text-center text-gray-400">No hay prompts configurados. Añade uno en la base de datos.</p>';
+                    }
+                    
+                    showScreen('dashboard');
+                } else {
+                    handleLogout(); 
+                }
+            }
+            
+            function renderSidebarNav(prompts) {
+                promptNavList.innerHTML = ''; 
+                if (!prompts) return;
+                
+                prompts.forEach(prompt => {
+                    const lastChanged = prompt.last_changed ? formatTimeAgo(new Date(prompt.last_changed)) : 'Nunca';
+                    const navItem = document.createElement('a');
+                    navItem.href = '#';
+                    navItem.className = 'nav-link block p-3 rounded-lg hover:bg-gray-700 group';
+                    navItem.dataset.promptId = prompt.id;
+                    navItem.innerHTML = `
+                        <div class="font-semibold text-gray-100 group-hover:text-blue-400">${prompt.title}</div>
+                        <div class="text-xs text-gray-400">Actualizado ${lastChanged}</div>
+                    `;
+                    navItem.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('bg-blue-900/50', 'text-blue-300'));
+                        navItem.classList.add('bg-blue-900/50', 'text-blue-300');
+                        renderPromptContent(prompt.id);
+                    });
+                    promptNavList.appendChild(navItem);
+                });
+            }
+            
+            function renderPromptContent(promptId) {
+                const prompt = state.prompts.find(p => p.id === promptId);
+                if (!prompt) return;
+
+                const lastChanged = prompt.last_changed ? formatTimeAgo(new Date(prompt.last_changed)) : 'Nunca';
+                
+                const escapeHTML = (str) => str.replace(/[&<>"']/g, (match) => {
+                    return {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;',
+                        "'": '&#39;'
+                    }[match];
+                });
+                
+                const escapedContent = escapeHTML(prompt.content);
+
+                promptContentArea.innerHTML = `
+                <div class="max-w-4xl mx-auto">
+                    <h1 class="text-4xl font-bold text-white">${prompt.title}</h1>
+                    <p class="mt-2 text-lg text-gray-300">${prompt.business_logic}</p>
+                    <div class="mt-8 p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                        <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
+                            <!-- Columna 1: Original --><div class="md:col-span-5">
+                                <label class="block text-sm font-medium text-gray-300">Prompt Original (Solo Lectura)</label>
+                                <textarea id="original-prompt-area" readonly class="w-full h-80 p-3 mt-1 bg-gray-900 border border-gray-700 rounded-md text-gray-300">${escapedContent}</textarea>
+                            </div>
+                            <!-- Columna 2: Flechas --><div class="text-center">
+                                <i class="fas fa-arrow-right text-3xl text-gray-500 hidden md:block"></i>
+                                <i class="fas fa-arrow-down text-3xl text-gray-500 block md:hidden"></i>
+                            </div>
+                            <!-- Columna 3: Editable --><div class="md:col-span-5">
+                                <label class="block text-sm font-medium text-gray-300">Nuevo Prompt (Editable)</label>
+                                <textarea id="editable-prompt-area" class="w-full h-80 p-3 mt-1 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">${escapedContent}</textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-6">
+                            <div class="text-sm text-gray-400">
+                                <strong>Último cambio:</strong> <span id="prompt-last-change-info">${lastChanged}</span>
+                            </div>
+                            <button id="save-prompt-btn" data-prompt-id="${prompt.id}" class="py-2 px-5 font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400">
+                                <span id="save-btn-text">MODIFICAR PROMPT</span>
+                                <i id="save-spinner" class="fas fa-spinner fa-spin hidden"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+                
+                document.getElementById('save-prompt-btn').addEventListener('click', handleSaveClick);
+            }
+
+            // --- PROMPT MODIFICATION ---
+            function handleSaveClick(e) {
+                const button = e.currentTarget;
+                const promptId = button.dataset.promptId;
+                const originalText = document.getElementById('original-prompt-area').value;
+                const newText = document.getElementById('editable-prompt-area').value;
+
+                if (originalText === newText) {
+                    alert("No hay cambios para guardar.");
+                    return;
+                }
+                
+                modalOldText.textContent = originalText;
+                modalNewText.textContent = newText;
+                modalReason.value = ''; 
+                modal.classList.remove('hidden');
+                
+                modalConfirmBtn.onclick = () => {
+                    submitModification(button, promptId, newText, modalReason.value);
+                };
+            }
+
+            async function submitModification(button, promptId, newContent, reason) {
+                setSaveButtonLoading(button, true);
+                modal.classList.add('hidden');
+                
+                const data = await apiFetch(`/api/prompts/${promptId}`, 'PUT', {
+                    content: newContent,
+                    reason: reason || 'Sin motivo especificado' 
+                });
+
+                if (data && data.success) {
+                    await bootstrapDashboard();
+                    renderPromptContent(parseInt(promptId));
+                    document.querySelector(`.nav-link[data-prompt-id="${promptId}"]`).classList.add('bg-blue-900/50', 'text-blue-300');
+                    alert("¡Prompt actualizado con éxito!");
+                } else {
+                    alert("Error al guardar el prompt.");
+                }
+            }
+            
+            
+            // --- UI HELPERS ---
+            function showScreen(screenName) {
+                loginScreen.classList.add('hidden');
+                dashboardScreen.classList.add('hidden');
+                
+                if (screenName === 'login') {
+                    loginScreen.classList.remove('hidden');
+                } else {
+                    dashboardScreen.classList.remove('hidden');
+                }
+            }
+            
+            function setLoginLoading(isLoading) {
+                if (isLoading) {
+                    loginStatus.textContent = '';
+                    loginBtnText.classList.add('hidden');
+                    loginSpinner.classList.remove('hidden');
+                    loginForm.querySelector('button').disabled = true;
+                } else {
+                    loginBtnText.classList.remove('hidden');
+                    loginSpinner.classList.add('hidden');
+                    loginForm.querySelector('button').disabled = false;
+                }
+            }
+
+            function setSaveButtonLoading(button, isLoading) {
+                const text = button.querySelector('#save-btn-text');
+                const spinner = button.querySelector('#save-spinner');
+                if (isLoading) {
+                    text.classList.add('hidden');
+                    spinner.classList.remove('hidden');
+                    button.disabled = true;
+                } else {
+                    text.classList.remove('hidden');
+                    spinner.classList.add('hidden');
+                    button.disabled = false;
+                }
+            }
+            
+            function formatTimeAgo(date) {
+                const seconds = Math.floor((new Date() - date) / 1000);
+                let interval = seconds / 31536000;
+                if (interval > 1) return `hace ${Math.floor(interval)} años`;
+                interval = seconds / 2592000;
+                if (interval > 1) return `hace ${Math.floor(interval)} meses`;
+                interval = seconds / 86400;
+                if (interval > 1) return `hace ${Math.floor(interval)} días`;
+                interval = seconds / 3600;
+                if (interval > 1) return `hace ${Math.floor(interval)} horas`;
+                interval = seconds / 60;
+                if (interval > 1) return `hace ${Math.floor(interval)} min`;
+                return 'hace unos segundos';
+            }
+
+            // --- START THE APP ---
+            init();
+        });
+    </script>
+</body>
+</html>
+
