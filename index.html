@@ -13,6 +13,7 @@
             /* Dark mode background */
             background-color: #111827; /* bg-gray-900 */
             color: #d1d5db; /* text-gray-300 */
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
         /* Custom scrollbar for sidebar */
         .sidebar-nav::-webkit-scrollbar { width: 4px; }
@@ -62,18 +63,20 @@
             cursor: not-allowed;
             box-shadow: none;
         }
+        /* Ensure textareas resize properly */
+        textarea {
+            resize: vertical; /* Allow vertical resize, disable horizontal */
+            min-height: 20rem; /* h-80 */
+        }
     </style>
 </head>
 <body class="text-gray-300">
 
-    <!-- ====================================================== --><!-- LOGIN SCREEN --><!-- ====================================================== --><div id="login-screen" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-        
+    <!-- ====================================================== --><!-- LOGIN SCREEN (NO CHANGES) --><!-- ====================================================== --><div id="login-screen" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
         <div class="w-full max-w-md text-center">
-            <!-- Icono Flotante de Emycommerce --><img src="Emy.png" alt="Emycommerce Logo" class="w-24 h-24 mx-auto mb-4 float-animation">
-
-            <!-- Tarjeta de Login con efecto Glassmorphism --><div class="p-8 space-y-6 bg-gray-800/50 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700">
+            <img src="Emy.png" alt="Emycommerce Logo" class="w-24 h-24 mx-auto mb-4 float-animation">
+            <div class="p-8 space-y-6 bg-gray-800/50 backdrop-blur-lg rounded-xl shadow-2xl border border-gray-700">
                 <h2 class="text-3xl font-bold text-center text-white">Admin de Prompts</h2>
-                
                 <form id="login-form" class="space-y-4">
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-300 sr-only">Contraseña</label>
@@ -91,71 +94,37 @@
         </div>
     </div>
 
-    <!-- ====================================================== --><!-- DASHBOARD SCREEN --><!-- ====================================================== --><div id="dashboard-screen" class="hidden">
+    <!-- ====================================================== --><!-- DASHBOARD SCREEN (UPDATED) --><!-- ====================================================== --><div id="dashboard-screen" class="hidden">
         <div class="flex h-screen bg-gray-900">
-            <!-- Sidebar --><aside class="w-80 bg-gray-800 shadow-lg flex flex-col border-r border-gray-700">
+            <!-- Sidebar (UPDATED NAV LOGIC) --><aside class="w-80 bg-gray-800 shadow-lg flex flex-col border-r border-gray-700">
                 <div class="p-6 border-b border-gray-700">
                     <h2 class="text-2xl font-bold text-white">¡Hola, <span id="user-name"></span>!</h2>
                 </div>
                 <nav id="prompt-nav-list" class="flex-1 p-4 space-y-2 overflow-y-auto sidebar-nav">
-                    <!-- Nav items will be injected by JS --><!-- Example:
-                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-700 group" data-prompt-id="1">
-                        <div class="font-semibold text-gray-100 group-hover:text-blue-400">Prompt de Saludo</div>
-                        <div class="text-xs text-gray-400">Actualizado hace 5 min</div>
-                    </a>
-                    --></nav>
+                    <!-- Nav items will be injected by JS -->
+                </nav>
                 <div class="p-4 border-t border-gray-700">
                     <button id="logout-btn" class="w-full py-2 px-4 rounded-md text-sm font-medium text-gray-300 bg-gray-700 hover:bg-gray-600">
                         <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
                     </button>
                 </div>
-                <!-- Branding Emycommerce --><div class="p-4 text-center text-xs text-gray-500 border-t border-gray-700">
+                <div class="p-4 text-center text-xs text-gray-500 border-t border-gray-700">
                     Emycommerce
                 </div>
             </aside>
 
-            <!-- Main Content Area --><main id="prompt-content-area" class="flex-1 p-6 md:p-10 overflow-y-auto">
-                <!-- Prompt content will be injected by JS --><!-- Example:
-                <div class="max-w-4xl mx-auto">
-                    <h1 class="text-4xl font-bold text-white">Prompt de Saludo</h1>
-                    <p class="mt-2 text-lg text-gray-300">Esta es la lógica de negocio...</p>
-                    <div class="mt-8 p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                        <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
-                            <div class="md:col-span-5">
-                                <label class="block text-sm font-medium text-gray-300">Prompt Original (Solo Lectura)</label>
-                                <textarea readonly class="w-full h-64 p-3 mt-1 bg-gray-900 border border-gray-700 rounded-md text-gray-300">Original text...</textarea>
-                            </div>
-                            <div class="text-center">
-                                <i class="fas fa-arrow-right text-3xl text-gray-500 hidden md:block"></i>
-                                <i class="fas fa-arrow-down text-3xl text-gray-500 block md:hidden"></i>
-                            </div>
-                            <div class="md:col-span-5">
-                                <label class="block text-sm font-medium text-gray-300">Nuevo Prompt (Editable)</label>
-                                <textarea id="editable-prompt-area" class="w-full h-64 p-3 mt-1 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">Editable text...</textarea>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center mt-6">
-                            <div class="text-sm text-gray-400">
-                                <strong>Último cambio:</strong> <span id="prompt-last-change-info">hace 10 min</span>
-                            </div>
-                            <button id="save-prompt-btn" class="py-2 px-5 font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400">
-                                <span id="save-btn-text">MODIFICAR PROMPT</span>
-                                <i id="save-spinner" class="fas fa-spinner fa-spin hidden"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                --></main>
+            <!-- Main Content Area (UPDATED CONTENT LOGIC) --><main id="prompt-content-area" class="flex-1 p-6 md:p-10 overflow-y-auto">
+                 <p class="text-center text-gray-400">Selecciona un prompt de la barra lateral para empezar.</p>
+            </main>
         </div>
     </div>
-    
-    <!-- ====================================================== --><!-- CONFIRMATION MODAL ("Sweet Alert") --><!-- ====================================================== --><div id="confirmation-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+
+    <!-- ====================================================== --><!-- CONFIRMATION MODAL (NO CHANGES) --><!-- ====================================================== --><div id="confirmation-modal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
         <div class="modal-content transform transition-all bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl border border-gray-700">
             <div class="p-6">
                 <h3 class="text-2xl font-bold text-white">Confirmar Cambios</h3>
                 <p class="mt-2 text-gray-300">Estás a punto de modificar el prompt. Por favor, revisa los cambios y agrega una razón.</p>
-                
-                <!-- "Ver más" changes section --><div class="mt-4 max-h-60 overflow-y-auto p-4 bg-gray-900 rounded-lg border border-gray-700">
+                <div class="mt-4 max-h-60 overflow-y-auto p-4 bg-gray-900 rounded-lg border border-gray-700">
                     <h4 class="font-semibold text-white">Cambios a realizar:</h4>
                     <div class="mt-2">
                         <label class="text-xs font-medium text-red-400">--- ANTERIOR ---</label>
@@ -166,14 +135,12 @@
                         <pre id="modal-new-text" class="w-full p-2 text-sm bg-green-900/50 rounded text-green-300 whitespace-pre-wrap"></pre>
                     </div>
                 </div>
-
-                <!-- Reason Textarea --><div class="mt-4">
+                <div class="mt-4">
                     <label for="modal-reason" class="block text-sm font-medium text-gray-300">Razón del cambio (Opcional)</label>
                     <textarea id="modal-reason" rows="3" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Ajuste de tono para ser más amigable..."></textarea>
                 </div>
             </div>
-            
-            <!-- Modal Footer --><div class="px-6 py-4 bg-gray-800/50 rounded-b-xl flex justify-end space-x-3 border-t border-gray-700">
+            <div class="px-6 py-4 bg-gray-800/50 rounded-b-xl flex justify-end space-x-3 border-t border-gray-700">
                 <button id="modal-cancel-btn" class="py-2 px-4 text-sm font-medium text-gray-300 bg-gray-600 border border-gray-500 rounded-lg hover:bg-gray-500">
                     Cancelar
                 </button>
@@ -185,21 +152,17 @@
     </div>
 
 
-    <!-- ====================================================== --><!-- JAVASCRIPT APPLICATION --><!-- ====================================================== --><script>
+    <!-- ====================================================== --><!-- JAVASCRIPT APPLICATION (UPDATED) --><!-- ====================================================== --><script>
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- CONFIGURACIÓN ---
-            // ¡PON TU URL PERMANENTE DE CLOUDFLARE TUNNEL AQUÍ!
-            // Esta es la única URL que la app usará.
-            const HARDCODED_SERVER_URL = "https://tu-url-permanente.trycloudflare.com";
-
+            const HARDCODED_SERVER_URL = "https://wpp-bot-admin.trycloudflare.com"; // <-- ¡RECUERDA CAMBIAR ESTO!
 
             // --- STATE ---
             const state = {
-                // serverUrl: '', // Ya no se necesita, usamos la constante
-                token: null, // Will store User ID as token
+                token: null, // User JID
                 userName: '',
-                prompts: [] // Will be an array of prompt objects
+                prompts: []
             };
 
             // --- DOM ELEMENTS ---
@@ -209,16 +172,11 @@
             const loginStatus = document.getElementById('login-status');
             const loginBtnText = document.getElementById('login-btn-text');
             const loginSpinner = document.getElementById('login-spinner');
-            
-            // const serverUrlInput = document.getElementById('server_url'); // Ya no se necesita
-            // const usernameInput = document.getElementById('username'); // Ya no se necesita
             const passwordInput = document.getElementById('password');
-            
             const userNameEl = document.getElementById('user-name');
             const promptNavList = document.getElementById('prompt-nav-list');
             const promptContentArea = document.getElementById('prompt-content-area');
             const logoutBtn = document.getElementById('logout-btn');
-
             const modal = document.getElementById('confirmation-modal');
             const modalOldText = document.getElementById('modal-old-text');
             const modalNewText = document.getElementById('modal-new-text');
@@ -227,58 +185,36 @@
             const modalConfirmBtn = document.getElementById('modal-confirm-btn');
 
             // --- API FETCHER ---
-            // A helper to make all API calls
             async function apiFetch(endpoint, method, body) {
-                // Usa la URL hardcodeada en lugar de state.serverUrl
                 const url = HARDCODED_SERVER_URL + endpoint;
-                
-                const headers = {
-                    'Content-Type': 'application/json'
-                };
+                const headers = { 'Content-Type': 'application/json' };
                 if (state.token) {
                     headers['Authorization'] = `Bearer ${state.token}`;
                 }
-
                 try {
                     const options = { method, headers };
-                    if (body) {
-                        options.body = JSON.stringify(body);
-                    }
-                    
+                    if (body) options.body = JSON.stringify(body);
                     const response = await fetch(url, options);
-                    
                     const data = await response.json();
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Ocurrió un error en el servidor');
-                    }
+                    if (!response.ok) throw new Error(data.error || 'Server Error');
                     return data;
-
                 } catch (err) {
                     console.error('API Fetch Error:', err);
-                    loginStatus.textContent = err.message; // Show general errors here
+                    const statusEl = document.getElementById('login-status') || document.getElementById('status'); // Use login status or dashboard status
+                     if (statusEl) statusEl.textContent = err.message;
                     return null;
                 }
             }
 
             // --- ON PAGE LOAD ---
             function init() {
-                // Ya no necesitamos la URL del server desde localStorage
                 const savedToken = localStorage.getItem('token');
-                
-                // if (savedUrl) {  // --- ELIMINADO
-                //     serverUrlInput.value = savedUrl; // --- ELIMINADO
-                //     state.serverUrl = savedUrl; // --- ELIMINADO
-                // } // --- ELIMINADO
-
                 if (savedToken) {
                     state.token = savedToken;
-                    // 2. Try to bootstrap dashboard if token exists
                     bootstrapDashboard();
                 } else {
-                    // 3. Show login if no token
                     showScreen('login');
                 }
-                
                 loginForm.addEventListener('submit', handleLogin);
                 logoutBtn.addEventListener('click', handleLogout);
                 modalCancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
@@ -288,76 +224,78 @@
             async function handleLogin(e) {
                 e.preventDefault();
                 setLoginLoading(true);
-                
                 const password = passwordInput.value;
-
-                if (!password) { 
+                if (!password) {
                     loginStatus.textContent = 'Por favor, completa la contraseña.';
                     setLoginLoading(false);
                     return;
                 }
-
                 const data = await apiFetch('/api/login', 'POST', { password });
-
                 if (data && data.token) {
                     state.token = data.token;
                     localStorage.setItem('token', state.token);
-                    
                     await bootstrapDashboard();
                 } else {
+                    // apiFetch already handles setting loginStatus on error
                     setLoginLoading(false);
                 }
             }
-            
+
             function handleLogout() {
-                state.token = null;
-                state.userName = '';
-                state.prompts = [];
+                state.token = null; state.userName = ''; state.prompts = [];
                 localStorage.removeItem('token');
-                
                 promptNavList.innerHTML = '';
                 promptContentArea.innerHTML = '<p class="text-center text-gray-400">Selecciona un prompt para empezar.</p>';
-                passwordInput.value = ''; 
-                
+                passwordInput.value = '';
                 showScreen('login');
             }
 
             // --- DASHBOARD ---
             async function bootstrapDashboard() {
                 const data = await apiFetch('/api/dashboard', 'GET');
-                
                 if (data && data.user) {
                     state.userName = data.user.username;
-                    state.prompts = data.prompts; 
-                    
-                    userNameEl.textContent = state.userName;
+                    state.prompts = data.prompts || []; // Ensure prompts is an array
+                    userNameEl.textContent = state.userName; // Display the JID
                     renderSidebarNav(state.prompts);
-                    
                     if (state.prompts.length > 0) {
-                        renderPromptContent(state.prompts[0].id); 
-                        document.querySelector('.nav-link[data-prompt-id="' + state.prompts[0].id + '"]').classList.add('bg-blue-900/50', 'text-blue-300');
+                        renderPromptContent(state.prompts[0].id);
+                        // Highlight first item after rendering
+                        const firstLink = document.querySelector('.nav-link[data-prompt-id="' + state.prompts[0].id + '"]');
+                        if (firstLink) {
+                            firstLink.classList.add('bg-blue-900/50', 'text-blue-300');
+                        }
                     } else {
-                        promptContentArea.innerHTML = '<p class="text-center text-gray-400">No hay prompts configurados. Añade uno en la base de datos.</p>';
+                        promptContentArea.innerHTML = '<p class="text-center text-gray-400">No hay prompts configurados.</p>';
                     }
-                    
                     showScreen('dashboard');
+                     // Reset login status in case there was a previous error message
+                    if (loginStatus) loginStatus.textContent = '';
                 } else {
-                    handleLogout(); 
+                    // If dashboard fetch fails (e.g., invalid token), log out
+                    handleLogout();
                 }
+                 setLoginLoading(false); // Ensure loading state is reset
             }
-            
+
+            // *** UPDATED ***
             function renderSidebarNav(prompts) {
-                promptNavList.innerHTML = ''; 
-                if (!prompts) return;
-                
+                promptNavList.innerHTML = '';
+                if (!prompts || prompts.length === 0) {
+                     promptNavList.innerHTML = '<p class="p-3 text-sm text-gray-400">No hay prompts disponibles.</p>';
+                     return;
+                }
+
                 prompts.forEach(prompt => {
                     const lastChanged = prompt.last_changed ? formatTimeAgo(new Date(prompt.last_changed)) : 'Nunca';
                     const navItem = document.createElement('a');
                     navItem.href = '#';
                     navItem.className = 'nav-link block p-3 rounded-lg hover:bg-gray-700 group';
                     navItem.dataset.promptId = prompt.id;
+
+                    // Use prompt.name (Spanish) for the main link text
                     navItem.innerHTML = `
-                        <div class="font-semibold text-gray-100 group-hover:text-blue-400">${prompt.title}</div>
+                        <div class="font-semibold text-gray-100 group-hover:text-blue-400">${escapeHTML(prompt.name)}</div>
                         <div class="text-xs text-gray-400">Actualizado ${lastChanged}</div>
                     `;
                     navItem.addEventListener('click', (e) => {
@@ -369,143 +307,198 @@
                     promptNavList.appendChild(navItem);
                 });
             }
-            
+
+            // *** UPDATED ***
             function renderPromptContent(promptId) {
                 const prompt = state.prompts.find(p => p.id === promptId);
-                if (!prompt) return;
+                if (!prompt) {
+                     promptContentArea.innerHTML = '<p class="text-center text-red-400">Error: No se encontró el prompt.</p>';
+                     return;
+                }
 
                 const lastChanged = prompt.last_changed ? formatTimeAgo(new Date(prompt.last_changed)) : 'Nunca';
-                
-                const escapeHTML = (str) => str.replace(/[&<>"']/g, (match) => {
-                    return {
-                        '&': '&amp;',
-                        '<': '&lt;',
-                        '>': '&gt;',
-                        '"': '&quot;',
-                        "'": '&#39;'
-                    }[match];
-                });
-                
-                const escapedContent = escapeHTML(prompt.content);
 
+                const escapedContent = escapeHTML(prompt.content);
+                const escapedName = escapeHTML(prompt.name);
+                const escapedConcept = escapeHTML(prompt.concepto); // Use 'concepto' from API
+
+                // Use prompt.name for title, prompt.concepto for subtitle
                 promptContentArea.innerHTML = `
                 <div class="max-w-4xl mx-auto">
-                    <h1 class="text-4xl font-bold text-white">${prompt.title}</h1>
-                    <p class="mt-2 text-lg text-gray-300">${prompt.business_logic}</p>
+                    <h1 class="text-4xl font-bold text-white">${escapedName}</h1>
+                    <p class="mt-2 text-lg text-gray-300">${escapedConcept}</p>
                     <div class="mt-8 p-6 bg-gray-800 rounded-xl shadow-lg border border-gray-700">
                         <div class="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
-                            <!-- Columna 1: Original --><div class="md:col-span-5">
+                            <div class="md:col-span-5">
                                 <label class="block text-sm font-medium text-gray-300">Prompt Original (Solo Lectura)</label>
-                                <textarea id="original-prompt-area" readonly class="w-full h-80 p-3 mt-1 bg-gray-900 border border-gray-700 rounded-md text-gray-300">${escapedContent}</textarea>
+                                <textarea id="original-prompt-area" readonly class="w-full p-3 mt-1 bg-gray-900 border border-gray-700 rounded-md text-gray-300">${escapedContent}</textarea>
                             </div>
-                            <!-- Columna 2: Flechas --><div class="text-center">
+                            <div class="text-center">
                                 <i class="fas fa-arrow-right text-3xl text-gray-500 hidden md:block"></i>
                                 <i class="fas fa-arrow-down text-3xl text-gray-500 block md:hidden"></i>
                             </div>
-                            <!-- Columna 3: Editable --><div class="md:col-span-5">
+                            <div class="md:col-span-5">
                                 <label class="block text-sm font-medium text-gray-300">Nuevo Prompt (Editable)</label>
-                                <textarea id="editable-prompt-area" class="w-full h-80 p-3 mt-1 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">${escapedContent}</textarea>
+                                <textarea id="editable-prompt-area" class="w-full p-3 mt-1 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500">${escapedContent}</textarea>
                             </div>
                         </div>
                         <div class="flex justify-between items-center mt-6">
                             <div class="text-sm text-gray-400">
                                 <strong>Último cambio:</strong> <span id="prompt-last-change-info">${lastChanged}</span>
                             </div>
-                            <button id="save-prompt-btn" data-prompt-id="${prompt.id}" class="py-2 px-5 font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400">
+                            <button id="save-prompt-btn" data-prompt-id="${prompt.id}" class="py-2 px-5 font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
                                 <span id="save-btn-text">MODIFICAR PROMPT</span>
                                 <i id="save-spinner" class="fas fa-spinner fa-spin hidden"></i>
                             </button>
                         </div>
+                         <p id="status" class="mt-4 text-sm text-center text-green-400"></p> <!-- Status for save operations -->
                     </div>
                 </div>
                 `;
-                
-                document.getElementById('save-prompt-btn').addEventListener('click', handleSaveClick);
+
+                // Add event listener to the newly created button
+                 const saveBtn = document.getElementById('save-prompt-btn');
+                 if(saveBtn) {
+                     saveBtn.addEventListener('click', handleSaveClick);
+                 } else {
+                    console.error("Save button not found after rendering prompt content.");
+                 }
             }
 
             // --- PROMPT MODIFICATION ---
             function handleSaveClick(e) {
                 const button = e.currentTarget;
                 const promptId = button.dataset.promptId;
-                const originalText = document.getElementById('original-prompt-area').value;
-                const newText = document.getElementById('editable-prompt-area').value;
+                 // Ensure promptId is valid before proceeding
+                if (!promptId) {
+                    console.error("Prompt ID is missing from save button.");
+                    alert("Error: No se pudo identificar el prompt a guardar.");
+                    return;
+                }
+                const originalTextArea = document.getElementById('original-prompt-area');
+                const editableTextArea = document.getElementById('editable-prompt-area');
+
+                 if (!originalTextArea || !editableTextArea) {
+                    console.error("Text areas not found.");
+                    alert("Error: No se pudieron encontrar las áreas de texto.");
+                    return;
+                 }
+
+
+                const originalText = originalTextArea.value;
+                const newText = editableTextArea.value;
 
                 if (originalText === newText) {
                     alert("No hay cambios para guardar.");
                     return;
                 }
-                
+
                 modalOldText.textContent = originalText;
                 modalNewText.textContent = newText;
-                modalReason.value = ''; 
+                modalReason.value = '';
                 modal.classList.remove('hidden');
-                
+
+                // Assign the click handler directly, overwriting previous if any
                 modalConfirmBtn.onclick = () => {
-                    submitModification(button, promptId, newText, modalReason.value);
+                     // Check if button is still valid before calling submit
+                     const currentSaveBtn = document.getElementById('save-prompt-btn');
+                     if(currentSaveBtn && currentSaveBtn.dataset.promptId === promptId) {
+                         submitModification(currentSaveBtn, promptId, newText, modalReason.value);
+                     } else {
+                          console.error("Save button or prompt ID mismatch during confirmation.");
+                          alert("Error de estado. Por favor, recarga la página.");
+                          modal.classList.add('hidden');
+                     }
                 };
             }
 
-            async function submitModification(button, promptId, newContent, reason) {
+           async function submitModification(button, promptId, newContent, reason) {
                 setSaveButtonLoading(button, true);
                 modal.classList.add('hidden');
-                
+                const statusEl = document.getElementById('status'); // Status inside the prompt content area
+                if (statusEl) statusEl.textContent = `Guardando prompt ${promptId}...`;
+
+
                 const data = await apiFetch(`/api/prompts/${promptId}`, 'PUT', {
                     content: newContent,
-                    reason: reason || 'Sin motivo especificado' 
+                    reason: reason || 'Sin motivo especificado'
                 });
 
                 if (data && data.success) {
+                    // Update state locally first for immediate feedback (optional but good UX)
+                    const promptIndex = state.prompts.findIndex(p => p.id === parseInt(promptId));
+                    if (promptIndex > -1) {
+                        state.prompts[promptIndex].content = newContent;
+                         // Ideally, the API would return the updated timestamp
+                         // For now, we'll refetch everything to get the timestamp
+                    }
+
+                    // Refetch all data to update sidebar and timestamps
                     await bootstrapDashboard();
-                    renderPromptContent(parseInt(promptId));
-                    document.querySelector(`.nav-link[data-prompt-id="${promptId}"]`).classList.add('bg-blue-900/50', 'text-blue-300');
-                    alert("¡Prompt actualizado con éxito!");
+                     // Re-render the current prompt specifically to keep focus
+                     renderPromptContent(parseInt(promptId));
+                     // Re-highlight the current nav item
+                     const currentLink = document.querySelector(`.nav-link[data-prompt-id="${promptId}"]`);
+                     if (currentLink) currentLink.classList.add('bg-blue-900/50', 'text-blue-300');
+
+                    if (statusEl) statusEl.textContent = "✅ ¡Prompt actualizado con éxito!";
+                    // Clear message after a delay
+                    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 3000);
+
+
                 } else {
-                    alert("Error al guardar el prompt.");
+                     if (statusEl) statusEl.textContent = "❌ Error al guardar el prompt.";
+                     // Re-enable button on failure
+                     setSaveButtonLoading(button, false);
                 }
+                 // Make sure loading state is always reset eventually, even on error
+                 // However, bootstrapDashboard() calls setLoginLoading(false) which might interfere
+                 // We call it explicitly here for the save button.
+                 setSaveButtonLoading(button, false);
             }
-            
-            
+
+
             // --- UI HELPERS ---
             function showScreen(screenName) {
                 loginScreen.classList.add('hidden');
                 dashboardScreen.classList.add('hidden');
-                
-                if (screenName === 'login') {
-                    loginScreen.classList.remove('hidden');
-                } else {
-                    dashboardScreen.classList.remove('hidden');
-                }
+                if (screenName === 'login') loginScreen.classList.remove('hidden');
+                else dashboardScreen.classList.remove('hidden');
             }
-            
+
             function setLoginLoading(isLoading) {
+                 const button = loginForm.querySelector('button');
                 if (isLoading) {
                     loginStatus.textContent = '';
                     loginBtnText.classList.add('hidden');
                     loginSpinner.classList.remove('hidden');
-                    loginForm.querySelector('button').disabled = true;
+                    if (button) button.disabled = true;
                 } else {
                     loginBtnText.classList.remove('hidden');
                     loginSpinner.classList.add('hidden');
-                    loginForm.querySelector('button').disabled = false;
+                     if (button) button.disabled = false;
                 }
             }
 
             function setSaveButtonLoading(button, isLoading) {
+                if (!button) return; // Guard clause
                 const text = button.querySelector('#save-btn-text');
                 const spinner = button.querySelector('#save-spinner');
                 if (isLoading) {
-                    text.classList.add('hidden');
-                    spinner.classList.remove('hidden');
+                    if (text) text.classList.add('hidden');
+                    if (spinner) spinner.classList.remove('hidden');
                     button.disabled = true;
                 } else {
-                    text.classList.remove('hidden');
-                    spinner.classList.add('hidden');
+                    if (text) text.classList.remove('hidden');
+                    if (spinner) spinner.classList.add('hidden');
                     button.disabled = false;
                 }
             }
-            
+
             function formatTimeAgo(date) {
+                if (!(date instanceof Date) || isNaN(date)) return 'fecha inválida';
                 const seconds = Math.floor((new Date() - date) / 1000);
+                if (seconds < 5) return 'ahora mismo';
                 let interval = seconds / 31536000;
                 if (interval > 1) return `hace ${Math.floor(interval)} años`;
                 interval = seconds / 2592000;
@@ -516,8 +509,19 @@
                 if (interval > 1) return `hace ${Math.floor(interval)} horas`;
                 interval = seconds / 60;
                 if (interval > 1) return `hace ${Math.floor(interval)} min`;
-                return 'hace unos segundos';
+                return `hace ${Math.floor(seconds)} seg`;
             }
+             function escapeHTML(str) {
+                 if (typeof str !== 'string') return '';
+                 return str.replace(/[&<>"']/g, match => ({
+                     '&': '&amp;',
+                     '<': '&lt;',
+                     '>': '&gt;',
+                     '"': '&quot;',
+                     "'": '&#39;'
+                 }[match]));
+             }
+
 
             // --- START THE APP ---
             init();
